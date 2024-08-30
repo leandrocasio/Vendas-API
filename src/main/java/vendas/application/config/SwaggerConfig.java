@@ -21,7 +21,7 @@ public class SwaggerConfig {
                         .contact(new Contact()
                                 .name("Leandro Casio")
                                 .email("leandrotkcasio@gmail.com")
-                                .url("---")))
+                                .url("https://github.com/leandrocasio/Vendas-API")))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Token"))
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes("Bearer Token",

@@ -1,5 +1,7 @@
 package vendas.application.rest.controller;
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,7 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vendas.application.domain.entity.Usuario;
-import vendas.application.domain.repository.UsuarioRepository;
 import vendas.application.exception.SenhaInvalidaException;
 import vendas.application.rest.dto.CredenciaisDTO;
 import vendas.application.rest.dto.TokenDTO;
@@ -28,6 +29,10 @@ public class UsuarioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+            @ApiResponse(responseCode = "404", description = "Usuario não encontrado")
+    })
     public Usuario salvar(@RequestBody @Valid Usuario usuario) {
         String senhaCriptografada = passwordEncoder.encode(usuario.getSenha());
         usuario.setSenha(senhaCriptografada);
@@ -35,6 +40,10 @@ public class UsuarioController {
     }
 
     @PostMapping("/auth")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+            @ApiResponse(responseCode = "401", description = "Usuario não autorizado")
+    })
     public TokenDTO autenticar(@RequestBody CredenciaisDTO credenciais) {
         try {
             Usuario usuario = Usuario.builder()

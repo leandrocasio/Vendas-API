@@ -1,8 +1,9 @@
 package vendas.application.rest.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,6 @@ import org.springframework.web.server.ResponseStatusException;
 import vendas.application.domain.entity.ItemPedido;
 import vendas.application.domain.entity.Pedido;
 import vendas.application.domain.enums.StatusPedido;
-import vendas.application.domain.repository.Pedidos;
 import vendas.application.rest.dto.AtualizacaoStatusPedidoDTO;
 import vendas.application.rest.dto.InformacaoItemPedidoDTO;
 import vendas.application.rest.dto.InformacoesPedidoDTO;
@@ -19,7 +19,6 @@ import vendas.application.service.PedidoService;
 
 import javax.validation.Valid;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,13 +37,25 @@ public class PedidoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Salvar pedido")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "201", description = "Pedido salvo"),
+            @ApiResponse(responseCode = "400", description = "Erro as salvar pedido")
+    })
     public Integer save(@RequestBody @Valid PedidoDTO dto) {
         Pedido pedido = service.salvar(dto);
         return pedido.getId();
     }
 
     @GetMapping("{id}")
-    public InformacoesPedidoDTO getById(@PathVariable Integer id) {
+    @Operation(summary = "Pedido por ID")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "200", description = "Pedido encontrado"),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado para o ID informado")
+    })
+    public InformacoesPedidoDTO getById(
+            @Parameter(description = "ID do pedido")
+            @PathVariable Integer id) {
         return service
                 .obterPedidoCompleto(id)
                 .map(p -> converter(p))
@@ -53,8 +64,15 @@ public class PedidoController {
 
     @PatchMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateStatus(@PathVariable Integer id,
-                             @RequestBody @Valid AtualizacaoStatusPedidoDTO dto) {
+    @Operation(summary = "Atualizar pedido")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "201", description = "Pedido atualizado"),
+            @ApiResponse(responseCode = "404", description = "Pedido não atualizado")
+    })
+    public void updateStatus(
+            @Parameter(description = "ID do pedido")
+            @PathVariable Integer id,
+            @RequestBody @Valid AtualizacaoStatusPedidoDTO dto) {
         String novoStatus = dto.getNovoStatus();
         service.atualizaStatus(id, StatusPedido.valueOf(novoStatus));
     }
@@ -87,46 +105,3 @@ public class PedidoController {
         ).collect(Collectors.toList());
     }
 }
-
-
-/*
-
-
-    @DeleteMapping("{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Integer id ){
-        pedidos.findById(id)
-                .map(pedido -> {pedidos.delete(pedido);
-                    return pedido;
-                })
-                .orElseThrow(() ->  new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Pedido não encontrado"));
-    }
-
-    @PutMapping("{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable Integer id,
-                       @RequestBody Pedido pedido) {
-        pedidos.findById(id)
-                .map(pedidoExistente -> {
-                    pedido.setId(pedidoExistente.getId());
-                    pedidos.save(pedido);
-                    return pedidoExistente;
-                }) .orElseThrow(() ->  new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Pedido não encontrado"));
-    }
-
-    @GetMapping
-    public List<Pedido> find(Pedido filtro) {
-        ExampleMatcher matcher = ExampleMatcher
-                .matching()
-                .withIgnoreCase()
-                .withStringMatcher(
-                        ExampleMatcher.StringMatcher.CONTAINING);
-
-        Example example = Example.of(filtro, matcher);
-        return pedidos.findAll(example);
-
-    }
-    */
-

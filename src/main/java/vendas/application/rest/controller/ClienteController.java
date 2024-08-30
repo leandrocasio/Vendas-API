@@ -60,7 +60,9 @@ public class ClienteController {
             @ApiResponse(responseCode = "204", description = "Cliente exluído com sucesso"),
             @ApiResponse(responseCode = "400", description = "Erro ao excluir")
     })
-    public void delete(@PathVariable Integer id ){
+    public void delete(
+            @Parameter(description = "ID do cliente")
+            @PathVariable Integer id ){
         clientes.findById(id)
                 .map(cliente -> {clientes.delete(cliente);
                 return cliente;
@@ -70,9 +72,16 @@ public class ClienteController {
     }
 
     @PutMapping("{id}")
+    @Operation(summary = "Editar cliente")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "204", description = "Editar cliente com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Erro ao editar")
+    })
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable Integer id,
-                       @RequestBody @Valid Cliente cliente) {
+    public void update(
+                @Parameter(description = "ID do cliente")
+                @PathVariable Integer id,
+                @RequestBody @Valid Cliente cliente) {
              clientes.findById(id)
                 .map(clienteExistente -> {
                     cliente.setId(clienteExistente.getId());
@@ -83,6 +92,11 @@ public class ClienteController {
     }
 
     @GetMapping
+    @Operation(summary = "Buscar lista de clientes")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "200", description = "Clientes encontrado"),
+            @ApiResponse(responseCode = "404", description = "Erro as buscar clientes")
+    })
     public List<Cliente> find(Cliente filtro) {
         ExampleMatcher matcher = ExampleMatcher
                 .matching()

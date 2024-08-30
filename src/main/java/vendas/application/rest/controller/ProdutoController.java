@@ -1,5 +1,9 @@
 package vendas.application.rest.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.HttpStatus;
@@ -21,7 +25,14 @@ public class ProdutoController {
     }
 
     @GetMapping("{id}")
-    public Produto getProdutoById(@PathVariable Integer id){
+    @Operation(summary = "Produto por ID")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "200", description = "Produto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Erro as buscar produto")
+    })
+    public Produto getProdutoById(
+            @Parameter(description = "ID do produto")
+            @PathVariable Integer id){
         return produtos
                 .findById(id)
                 .orElseThrow(() ->  new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -30,13 +41,25 @@ public class ProdutoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Salvar Produto")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "201", description = "Produto salvo"),
+            @ApiResponse(responseCode = "400", description = "Erro as salvar produto")
+    })
     public Produto save(@RequestBody @Valid Produto produto) {
         return produtos.save(produto);
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Integer id ){
+    @Operation(summary = "Excluir Produto")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "204", description = "Produto excluído"),
+            @ApiResponse(responseCode = "400", description = "Erro as excluir produto")
+    })
+    public void delete(
+            @Parameter(description = "ID do produto")
+            @PathVariable Integer id ){
         produtos.findById(id)
                 .map(produto -> {produtos.delete(produto);
                     return produto;
@@ -47,8 +70,15 @@ public class ProdutoController {
 
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable Integer id,
-                       @RequestBody @Valid Produto produto) {
+    @Operation(summary = "Editar Produto")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "204", description = "Produto editado"),
+            @ApiResponse(responseCode = "400", description = "Erro as editar produto")
+    })
+    public void update(
+            @Parameter(description = "ID do produto")
+            @PathVariable Integer id,
+            @RequestBody @Valid Produto produto) {
         produtos.findById(id)
                 .map(produtoExistente -> {
                     produto.setId(produtoExistente.getId());
@@ -59,6 +89,11 @@ public class ProdutoController {
     }
 
     @GetMapping
+    @Operation(summary = "Buscar lista de produtos")
+    @ApiResponses(value  = {
+            @ApiResponse(responseCode = "200", description = "Produtos encontrado"),
+            @ApiResponse(responseCode = "404", description = "Erro as buscar produtos")
+    })
     public List<Produto> find(Produto filtro) {
         ExampleMatcher matcher = ExampleMatcher
                 .matching()
